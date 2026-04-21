@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="3"
+      main_tree_to_execute="mainTree">
+  <BehaviorTree ID="mainTree">
+    <Sequence>
+      <CompareBiggerInt a="{correct_material}"
+                        b="2"
+                        cout=""/>
+    </Sequence>
+  </BehaviorTree>
+
+  <!-- Description of Node Models (used by Groot) -->
+  <TreeNodesModel>
+    <Action ID="CompareBiggerInt"
+            editable="true">
+      <input_port name="a"/>
+      <input_port name="b"/>
+      <input_port name="cout"/>
+    </Action>
+  </TreeNodesModel>
+
+</root>

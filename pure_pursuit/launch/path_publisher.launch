@@ -1,0 +1,5 @@
+<launch>
+  <node name="path_publisher" pkg="pure_pursuit" type="path_publisher" output="screen">
+    <param name="file_folder" value="/home/duzhong/dzacs/src/resource/road_paths" />
+  </node>
+</launch>

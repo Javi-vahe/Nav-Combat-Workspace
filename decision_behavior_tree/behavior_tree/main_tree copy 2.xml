@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="3"
+      main_tree_to_execute="mainTree">
+  <BehaviorTree ID="mainTree">
+    <Sequence>
+      <ChangePIDSpeed max_speed="2.0"
+                      p_value="1.0"/>
+      <RetryUntilSuccessful num_attempts="-1">
+        <Timeout msec="5000">
+          <MoveBaseAction goal_x="2.429"
+                          goal_y="0.178"
+                          goal_orientation_z="0"
+                          goal_orientation_w="1"/>
+        </Timeout>
+      </RetryUntilSuccessful>
+      <ChangePIDSpeed max_speed="0.6"
+                      p_value="1.0"/>
+      <RetryUntilSuccessful num_attempts="-1">
+        <ForceFailure>
+          <Sequence>
+            <SwitchNextGoal/>
+            <ForceSuccess>
+              <Sequence>
+                <IfInGoalTolerance goal_x="{goal_x}"
+                                   goal_y="{goal_y}"
+                                   goal_orientation_z="0"
+                                   goal_orientation_w="1"
+                                   tolerance_xy="0.35"
+                                   tolerance_yaw="6.28"/>
+                <SwitchNextGoal/>
+              </Sequence>
+            </ForceSuccess>
+            <ForceSuccess>
+              <Sequence>
+                <Inverter>
+                  <IfDetectTarget/>
+                </Inverter>
+                <Parallel failure_threshold="-1"
+                          success_threshold="1">
+                  <RetryUntilSuccessful num_attempts="-1">
+                    <Delay delay_msec="50">
+                      <IfDetectTarget/>
+                    </Delay>
+                  </RetryUntilSuccessful>
+                  <ForceSuccess>
+                    <Timeout msec="6000">
+                      <MoveBaseAction goal_x="{goal_x}"
+                                      goal_y="{goal_y}"
+                                      goal_orientation_z="0"
+                                      goal_orientation_w="1"/>
+                    </Timeout>
+                  </ForceSuccess>
+                </Parallel>
+              </Sequence>
+            </ForceSuccess>
+            <Parallel failure_threshold="-1"
+                      success_threshold="2">
+              <ForceSuccess>
+                <IsAiming/>
+              </ForceSuccess>
+              <DelayAction seconds="0.5"/>
+            </Parallel>
+          </Sequence>
+        </ForceFailure>
+      </RetryUntilSuccessful>
+    </Sequence>
+  </BehaviorTree>
+
+  <!-- Description of Node Models (used by Groot) -->
+  <TreeNodesModel>
+    <Action ID="ChangePIDSpeed"
+            editable="true">
+      <input_port name="max_speed"
+                  default="0.0"/>
+      <input_port name="p_value"
+                  default="0.0"/>
+    </Action>
+    <Action ID="DelayAction"
+            editable="true">
+      <input_port name="seconds"
+                  default="0.0"/>
+    </Action>
+    <Action ID="IfDetectTarget"
+            editable="true"/>
+    <Action ID="IfInGoalTolerance"
+            editable="true">
+      <input_port name="goal_x"
+                  default="{goal_x}"/>
+      <input_port name="goal_y"
+                  default="{goal_y}"/>
+      <input_port name="goal_orientation_z"
+                  default="0"/>
+      <input_port name="goal_orientation_w"
+                  default="1"/>
+      <input_port name="tolerance_xy"
+                  default="0.35"/>
+      <input_port name="tolerance_yaw"
+                  default="6.28"/>
+    </Action>
+    <Action ID="IsAiming"
+            editable="true"/>
+    <Action ID="MoveBaseAction"
+            editable="true">
+      <input_port name="goal_x"
+                  default="0"/>
+      <input_port name="goal_y"
+                  default="0"/>
+      <input_port name="goal_orientation_z"
+                  default="0"/>
+      <input_port name="goal_orientation_w"
+                  default="1"/>
+    </Action>
+    <Action ID="SwitchNextGoal"
+            editable="true"/>
+  </TreeNodesModel>
+
+</root>

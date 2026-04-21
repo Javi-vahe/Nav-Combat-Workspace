@@ -1,0 +1,16 @@
+global_costmap:
+  global_frame: map 
+  robot_base_frame: base_link 
+  update_frequency: 5.0 
+  publish_frequency: 1.0 
+  transform_tolerance: 1.0
+  static_map: true
+  rolling_window: false
+  resolution: 0.02
+
+  plugins: 
+    - {name: static_layer, type: "costmap_2d::StaticLayer"}
+    # - {name: obstacle_layer, type: "costmap_2d::ObstacleLayer"}
+    - {name: decaying_layer, type: "decaying_layer::DecayingObstacleLayer"}
+    # - {name: stvl_layer,     type: "spatio_temporal_voxel_layer/SpatioTemporalVoxelLayer"}
+    - {name: inflation_layer, type: "costmap_2d::InflationLayer"}

@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="transformer_servo" type="material_processor" name="material_processor" output="screen">
+        <param name="self_team" value="1" />    <!-- 0红方 1蓝方 -->
+    </node>
+</launch>

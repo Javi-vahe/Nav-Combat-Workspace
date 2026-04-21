@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<launch>
+    <node name="dzsavepath" pkg="dzsavepath" type="dzsavepath" output="screen">
+      <param name="mappinmgsavePath" value = "/home/duzhong/dzacs/src/resource/road_paths/1.txt" type = "string" /> 
+    </node>
+
+</launch>

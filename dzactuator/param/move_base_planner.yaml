@@ -1,0 +1,50 @@
+shutdown_costmaps: false 
+ 
+controller_frequency: 10.0  
+controller_patience: 1.0 
+ 
+planner_frequency: 0.1  
+ 
+planner_patience: 3.0
+ 
+oscillation_timeout: 10.0 
+oscillation_distance: 0.02 
+max_planning_retries: 1 
+ 
+recovery_behavior_enabled: true
+clearing_rotation_allowed: false
+ 
+ 
+recovery_behaviors:  # 自恢复行为
+  - name: 'conservative_reset'  
+    type: 'clear_costmap_recovery/ClearCostmapRecovery'  
+ 
+  # - name: 'clearing_rotation'
+  #   type: 'rotate_recovery/RotateRecovery'  
+ 
+  # - name: 'clearing_move'
+  #   type: 'move_slow_and_clear/MoveSlowAndClear'
+  - name: "ackermann_recovery"
+    type: "ackermann_recovery/AckermannRecovery"
+ 
+conservative_reset:  
+  reset_distance: 1.0  
+  #layer_names: [static_layer, obstacle_layer, inflation_layer]
+  layer_names: [obstacle_layer]  
+ 
+aggressive_reset:  
+  reset_distance: 3.0  
+  #layer_names: [static_layer, obstacle_layer, inflation_layer]
+  layer_names: [obstacle_layer]
+ 
+super_reset:  
+  reset_distance: 5.0  
+  #layer_names: [static_layer, obstacle_layer, inflation_layer]
+  layer_names: [obstacle_layer]
+ 
+move_slow_and_clear:  
+  clearing_distance: 0.1
+  limited_trans_speed: 0.1  
+  limited_rot_speed: 0.4  
+  limited_distance: 0.3  
+ 

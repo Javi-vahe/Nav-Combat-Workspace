@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<launch>
+    <param name="/use_sim_time" value="false" />
+    <node name="dzjudgment" pkg="dzjudgment" type="dzjudgment" output="screen"/>
+      <param name="mcuserialport" value="/dev/dzesp32" type="string"/> 
+      <param name="mcubaudrate" value = "115200" type = "int"/>       <!-- 115200 -->  
+  
+</launch>

@@ -1,0 +1,33 @@
+<launch>
+    <arg name="decay" default="true" />
+    
+    <node name="static_tf0" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 /map /base_link 0" />
+    <node name="clock" pkg="decaying_obstacle_layer" type="clock.py" />
+    <node name="tester" pkg="costmap_2d" type="costmap_2d_node" output="screen">
+        <rosparam>
+            costmap:
+                obstacle_layer:
+                    observation_sources: points    
+                    points:
+                        clearing: true
+                    track_unknown_space: true
+                    decay_time: 0.5
+                origin_x: -2.0
+                origin_y: -2.0
+                publish_frequency: 10.0
+                width: 4
+                height: 4
+                resolution: 0.1    
+                track_unknown_space: true
+        </rosparam>
+        <rosparam ns="costmap" if="$(arg decay)">
+                plugins:
+                    - {name: obstacle_layer, type: 'decaying_layer::DecayingObstacleLayer'}        
+        </rosparam>
+        <rosparam ns="costmap" unless="$(arg decay)">
+                plugins:
+                    - {name: obstacle_layer, type: 'costmap_2d::ObstacleLayer'}        
+        </rosparam>
+    </node>
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find decaying_obstacle_layer)/test/clock.rviz" />
+</launch>

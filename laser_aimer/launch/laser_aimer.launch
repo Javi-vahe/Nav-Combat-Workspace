@@ -1,0 +1,12 @@
+<launch>
+    <node name="laser_aimer_node" pkg="laser_aimer" type="laser_aimer_node" output="screen">
+        <param name="laser_topic" value="scan_filtered"/>
+        <!-- <param name="base_frame" value="base_link"/> -->
+        <param name="base_frame" value="laser_emitter"/>
+        <param name="laser_frame" value="base_laser"/>
+        <param name="enable_clustering" value="true"/>
+        <param name="use_fixed_roi" value="false"/>
+        <param name="differential_tolerance" value="0.15"/>
+        <rosparam command="load" file="$(find laser_aimer)/param/roi_polygon.yaml" />
+    </node>
+</launch>

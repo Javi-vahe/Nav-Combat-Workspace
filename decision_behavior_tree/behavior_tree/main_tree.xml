@@ -1,0 +1,366 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="3"
+      main_tree_to_execute="mainTree">
+  <BehaviorTree ID="mainTree">
+    <Sequence>
+      <PubGotoMaterial int="0"/>
+      <RetryUntilSuccessful num_attempts="-1">
+        <Delay delay_msec="100">
+          <Inverter>
+            <IfEqualInt a="0"
+                        b="{material_goal_id}"
+                        cout="wait for first material"/>
+          </Inverter>
+        </Delay>
+      </RetryUntilSuccessful>
+      <SwitchGoalTo goal_id="{material_goal_id}"/>
+      <ChangeGoalTolerance xy="0.05"
+                           yaw="0.25"/>
+      <PubGotoMaterial int="1"/>
+      <RetryUntilSuccessful num_attempts="-1">
+        <Delay delay_msec="10">
+          <IfEqualInt a="0"
+                      b="{chassis_mode}"
+                      cout="wait for upper mode"/>
+        </Delay>
+      </RetryUntilSuccessful>
+      <ForceSuccess>
+        <Timeout msec="10000">
+          <Parallel failure_threshold="-1"
+                    success_threshold="1">
+            <ForceFailure>
+              <Fallback>
+                <Timeout msec="10000">
+                  <PurePursuitAction start_pos="0"
+                                     goal_pos="{material_goal_id}"/>
+                </Timeout>
+                <RetryUntilSuccessful num_attempts="-1">
+                  <Timeout msec="10000">
+                    <MoveBaseAction goal_x="{material_goal_x}"
+                                    goal_y="{material_goal_y}"
+                                    goal_orientation_z="{material_goal_z}"
+                                    goal_orientation_w="{material_goal_w}"/>
+                  </Timeout>
+                </RetryUntilSuccessful>
+              </Fallback>
+            </ForceFailure>
+            <WaitVoice/>
+          </Parallel>
+        </Timeout>
+      </ForceSuccess>
+      <DelayAction seconds="0.2"/>
+      <ChangeGoalTolerance xy="0.15"
+                           yaw="0.25"/>
+      <Fallback>
+        <Timeout msec="10000">
+          <PurePursuitAction start_pos="{material_goal_id}"
+                             goal_pos="0"/>
+        </Timeout>
+        <RetryUntilSuccessful num_attempts="-1">
+          <Timeout msec="10000">
+            <MoveBaseAction goal_x="0.0"
+                            goal_y="0.0"
+                            goal_orientation_z="0.0"
+                            goal_orientation_w="1.0"/>
+          </Timeout>
+        </RetryUntilSuccessful>
+      </Fallback>
+      <Fallback>
+        <IfEqualInt a="0"
+                    b="{material_goal_id}"
+                    cout="still has self material"/>
+        <CompareBiggerInt a="{material_goal_id}"
+                          b="100"
+                          cout="has enemy material"/>
+      </Fallback>
+      <ChangeGoalTolerance xy="0.1"
+                           yaw="0.25"/>
+      <ForceSuccess>
+        <Timeout msec="5000">
+          <RetryUntilSuccessful num_attempts="-1">
+            <PurePursuitAction start_pos="0"
+                               goal_pos="21"/>
+          </RetryUntilSuccessful>
+        </Timeout>
+      </ForceSuccess>
+      <GimbalCruise cmd="12"/>
+      <ForceSuccess>
+        <Sequence>
+          <CompareBiggerInt a="{correct_material}"
+                            b="2"
+                            cout="check material correct count bigger than 2"/>
+          <Timeout msec="3000">
+            <RetryUntilSuccessful num_attempts="-1">
+              <Delay delay_msec="50">
+                <IfDetectTarget/>
+              </Delay>
+            </RetryUntilSuccessful>
+          </Timeout>
+          <GimbalCruise cmd="3"/>
+          <WaitShoot shoot_count="0"
+                     timeout="1"/>
+        </Sequence>
+      </ForceSuccess>
+      <GimbalCruise cmd="1"/>
+      <RetryUntilSuccessful num_attempts="-1">
+        <ForceFailure>
+          <Fallback>
+            <Sequence>
+              <Inverter>
+                <IfEqualInt a="0"
+                            b="{material_goal_id}"
+                            cout="still has material"/>
+              </Inverter>
+              <Parallel failure_threshold="-1"
+                        success_threshold="1">
+                <RetryUntilSuccessful num_attempts="-1">
+                  <Fallback>
+                    <Sequence>
+                      <IfEqualInt a="1"
+                                  b="{hold_material}"
+                                  cout="hold_material check"/>
+                      <ChangeGoalTolerance xy="0.20"
+                                           yaw="0.25"/>
+                      <RetryUntilSuccessful num_attempts="-1">
+                        <Timeout msec="10000">
+                          <MoveBaseAction goal_x="0.0"
+                                          goal_y="0.0"
+                                          goal_orientation_z="0.0"
+                                          goal_orientation_w="1.0"/>
+                        </Timeout>
+                      </RetryUntilSuccessful>
+                    </Sequence>
+                    <Sequence>
+                      <PrintAction content="aaa"/>
+                      <SwitchGoalTo goal_id="{material_goal_id}"/>
+                      <ChangeGoalTolerance xy="0.05"
+                                           yaw="0.25"/>
+                      <PubGotoMaterial int="1"/>
+                      <ForceSuccess>
+                        <Timeout msec="20000">
+                          <Parallel failure_threshold="-1"
+                                    success_threshold="1">
+                            <ForceFailure>
+                              <RetryUntilSuccessful num_attempts="-1">
+                                <Timeout msec="10000">
+                                  <MoveBaseAction goal_x="{material_goal_x}"
+                                                  goal_y="{material_goal_y}"
+                                                  goal_orientation_z="{material_goal_z}"
+                                                  goal_orientation_w="{material_goal_w}"/>
+                                </Timeout>
+                              </RetryUntilSuccessful>
+                            </ForceFailure>
+                            <WaitVoice/>
+                          </Parallel>
+                        </Timeout>
+                      </ForceSuccess>
+                      <DelayAction seconds="0.2"/>
+                      <ChangeGoalTolerance xy="0.15"
+                                           yaw="0.25"/>
+                      <RetryUntilSuccessful num_attempts="-1">
+                        <Timeout msec="10000">
+                          <MoveBaseAction goal_x="0.0"
+                                          goal_y="0.0"
+                                          goal_orientation_z="0.0"
+                                          goal_orientation_w="1.0"/>
+                        </Timeout>
+                      </RetryUntilSuccessful>
+                      <PrintAction content="bbb"/>
+                    </Sequence>
+                  </Fallback>
+                </RetryUntilSuccessful>
+                <Sequence>
+                  <RetryUntilSuccessful num_attempts="-1">
+                    <Delay delay_msec="50">
+                      <IfDetectTarget/>
+                    </Delay>
+                  </RetryUntilSuccessful>
+                  <CompareBiggerInt a="{ammo}"
+                                    b="0"
+                                    cout="goto enemy material, check ammo"/>
+                </Sequence>
+              </Parallel>
+              <PubGotoMaterial int="0"/>
+              <Parallel failure_threshold="1"
+                        success_threshold="-1">
+                <Timeout msec="10000">
+                  <IsAiming/>
+                </Timeout>
+                <KeepRunningUntilFailure>
+                  <Delay delay_msec="50">
+                    <CompareBiggerInt a="{ammo}"
+                                      b="0"
+                                      cout="has material, check ammo"/>
+                  </Delay>
+                </KeepRunningUntilFailure>
+              </Parallel>
+            </Sequence>
+            <Sequence>
+              <IfEqualInt a="0"
+                          b="{material_goal_id}"
+                          cout=""/>
+              <ChangeGoalTolerance xy="0.35"
+                                   yaw="0.25"/>
+              <SwitchNextGoal/>
+              <ForceSuccess>
+                <Sequence>
+                  <IfInGoalTolerance goal_x="{goal_x}"
+                                     goal_y="{goal_y}"
+                                     goal_orientation_z="{goal_orientation_z}"
+                                     goal_orientation_w="{goal_orientation_w}"
+                                     tolerance_xy="0.35"
+                                     tolerance_yaw="6.28"/>
+                  <SwitchNextGoal/>
+                </Sequence>
+              </ForceSuccess>
+              <ForceSuccess>
+                <Sequence>
+                  <Fallback>
+                    <Inverter>
+                      <IfDetectTarget/>
+                    </Inverter>
+                    <IfEqualInt a="0"
+                                b="{ammo}"
+                                cout="no material, check ammo empty"/>
+                  </Fallback>
+                  <Parallel failure_threshold="-1"
+                            success_threshold="1">
+                    <ForceSuccess>
+                      <Timeout msec="10000">
+                        <MoveBaseAction goal_x="{goal_x}"
+                                        goal_y="{goal_y}"
+                                        goal_orientation_z="{goal_orientation_z}"
+                                        goal_orientation_w="{goal_orientation_w}"/>
+                      </Timeout>
+                    </ForceSuccess>
+                    <RetryUntilSuccessful num_attempts="-1">
+                      <Delay delay_msec="50">
+                        <Sequence>
+                          <CompareBiggerInt a="{ammo}"
+                                            b="0"
+                                            cout="no material, naving, check ammo"/>
+                          <IfDetectTarget/>
+                        </Sequence>
+                      </Delay>
+                    </RetryUntilSuccessful>
+                  </Parallel>
+                </Sequence>
+              </ForceSuccess>
+              <Parallel failure_threshold="1"
+                        success_threshold="-1">
+                <Timeout msec="10000">
+                  <IsAiming/>
+                </Timeout>
+                <KeepRunningUntilFailure>
+                  <Delay delay_msec="50">
+                    <CompareBiggerInt a="{ammo}"
+                                      b="0"
+                                      cout="no material, check ammo"/>
+                  </Delay>
+                </KeepRunningUntilFailure>
+              </Parallel>
+            </Sequence>
+          </Fallback>
+        </ForceFailure>
+      </RetryUntilSuccessful>
+    </Sequence>
+  </BehaviorTree>
+
+  <!-- Description of Node Models (used by Groot) -->
+  <TreeNodesModel>
+    <Action ID="ChangeGoalTolerance"
+            editable="true">
+      <input_port name="xy"
+                  default="0.05"/>
+      <input_port name="yaw"
+                  default="0.25"/>
+    </Action>
+    <Action ID="CompareBiggerInt"
+            editable="true">
+      <input_port name="a"/>
+      <input_port name="b"/>
+      <input_port name="cout"/>
+    </Action>
+    <Action ID="DelayAction"
+            editable="true">
+      <input_port name="seconds"
+                  default="0.0"/>
+    </Action>
+    <Action ID="GimbalCruise"
+            editable="true">
+      <input_port name="cmd"
+                  default="0"/>
+    </Action>
+    <Action ID="IfDetectTarget"
+            editable="true"/>
+    <Action ID="IfEqualInt"
+            editable="true">
+      <input_port name="a"
+                  default="0"/>
+      <input_port name="b"
+                  default="0"/>
+      <input_port name="cout"/>
+    </Action>
+    <Action ID="IfInGoalTolerance"
+            editable="true">
+      <input_port name="goal_x"
+                  default="{goal_x}"/>
+      <input_port name="goal_y"
+                  default="{goal_y}"/>
+      <input_port name="goal_orientation_z"
+                  default="0"/>
+      <input_port name="goal_orientation_w"
+                  default="1"/>
+      <input_port name="tolerance_xy"
+                  default="0.35"/>
+      <input_port name="tolerance_yaw"
+                  default="6.28"/>
+    </Action>
+    <Action ID="IsAiming"
+            editable="true"/>
+    <Action ID="MoveBaseAction"
+            editable="true">
+      <input_port name="goal_x"
+                  default="0"/>
+      <input_port name="goal_y"
+                  default="0"/>
+      <input_port name="goal_orientation_z"
+                  default="0"/>
+      <input_port name="goal_orientation_w"
+                  default="1"/>
+    </Action>
+    <Action ID="PrintAction"
+            editable="true">
+      <input_port name="content"/>
+    </Action>
+    <Action ID="PubGotoMaterial"
+            editable="true">
+      <input_port name="int"
+                  default="0">0 stop, 1 start</input_port>
+    </Action>
+    <Action ID="PurePursuitAction"
+            editable="true">
+      <input_port name="start_pos"
+                  default="0"/>
+      <input_port name="goal_pos"
+                  default="0"/>
+    </Action>
+    <Action ID="SwitchGoalTo"
+            editable="true">
+      <input_port name="goal_id"
+                  default="0"/>
+    </Action>
+    <Action ID="SwitchNextGoal"
+            editable="true"/>
+    <Action ID="WaitShoot"
+            editable="true">
+      <input_port name="shoot_count"
+                  default="10"/>
+      <input_port name="timeout"
+                  default="10.0"/>
+    </Action>
+    <Action ID="WaitVoice"
+            editable="true"/>
+  </TreeNodesModel>
+
+</root>

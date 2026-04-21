@@ -1,0 +1,9 @@
+<launch>
+
+  <include file="$(find dzactuator)/launch/bringup.launch" />
+  <include file="$(find dzactuator)/launch/amcl.launch" />
+  <include file="$(find dzactuator)/launch/dznavigation.launch" />
+  <include file="$(find dzactuator)/launch/dzjudgment.launch" />
+  <include file="$(find dzactuator)/launch/dzrknnpt.launch" />
+
+ </launch>

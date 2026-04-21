@@ -1,0 +1,13 @@
+<launch>
+    <include file="$(find dzactuator)/launch/bringup.launch"/>
+
+    <include file="$(find dzactuator)/launch/dzjudgment.launch"/>
+
+    <include file="$(find dzactuator)/launch/dznavigation.launch"/>
+
+    <include file="$(find transformer_zllc)/launch/bringup.launch"/>
+
+    <include file="$(find pure_pursuit)/launch/bringup.launch"/>
+
+    <!-- <include file="$(find decision_behavior_tree)/launch/bt_launch.launch"/> -->
+</launch>

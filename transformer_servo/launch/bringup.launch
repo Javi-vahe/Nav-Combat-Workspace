@@ -1,0 +1,29 @@
+<launch>
+    <arg name="self_team" default="1"/> <!-- 0 red | 1 blue -->
+
+    <!-- 发布物资位姿tf -->
+    <include file="$(find transformer_servo)/launch/material_tf_puber.launch"/>
+    <!-- 物资排序 -->
+    <node pkg="transformer_servo" type="material_processor" name="material_processor" output="log">
+        <param name="self_team" value="$(arg self_team)" />    <!-- 0红方 1蓝方 -->
+    </node>
+    <!-- 发布云台tf -->
+    <node pkg="transformer_servo" type="gimbal_tf_node" name="gimbal_tf_node" output="screen"/>
+    <!-- 控制云台对准物资 -->
+    <node pkg="transformer_servo" type="control_gimbal_to_material" name="control_gimbal_to_material" output="screen">
+        <param name="base_frame" value="base_link" />
+        <param name="gimbal_frame" value="gimbal_link" />
+        <param name="control_freq" value="30" />
+        <param name="visiable_angle" value="60.0" />
+        <param name="enable_shake" value="false" />
+        <param name="shake_angle_pitch" value="10.0" />
+        <param name="shake_angle_yaw" value="10.0" />
+    </node>
+    <!-- 各节点间的纽带 -->
+    <node pkg="transformer_servo" type="bond" name="bond" output="screen"/>
+
+    <node pkg="transformer_servo" type="teb_tolerance_changer" name="teb_tolerance_changer" output="screen"/>
+
+    <include file="$(find area_checker)/launch/check_area.launch"/>
+
+</launch>

@@ -1,0 +1,11 @@
+<launch>
+
+  <node name="area_checker_node" pkg="area_checker" type="area_checker_node" clear_params="true" output="log">
+    <!-- <rosparam command="load" file="$(find area_checker)/config/polygons.yaml" /> -->
+    <rosparam command="load" file="$(find area_checker)/config/recorded_areas.yaml" />
+    <param name="base_frame" value="base_center" />
+  </node>
+
+  <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find area_checker)/rviz/area.rviz"/> -->
+
+</launch>

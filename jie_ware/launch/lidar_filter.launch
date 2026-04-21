@@ -1,0 +1,8 @@
+<launch>
+    <node pkg="jie_ware" type="lidar_filter_node" name="lidar_filter_node" output="screen">
+        <param name="source_topic" value="scan" />
+        <param name="pub_topic" value="scan_filtered" />
+        <param name="outlier_threshold" value="0.03" />
+    </node>
+
+</launch>

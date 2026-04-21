@@ -1,0 +1,569 @@
+#include <ros/ros.h>
+#include <nav_msgs/OccupancyGrid.h>
+#include <sensor_msgs/Image.h>
+#include <sensor_msgs/RegionOfInterest.h>
+#include <sensor_msgs/LaserScan.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/transform_listener.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2/LinearMath/Matrix3x3.h>
+#include <geometry_msgs/TransformStamped.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <cv_bridge/cv_bridge.h>
+#include <opencv2/opencv.hpp>
+#include <std_msgs/String.h>
+#include <std_srvs/Empty.h>
+#include <vector>
+#include <cmath>
+#include <Eigen/Dense>
+#include <dynamic_reconfigure/server.h>
+#include <jie_ware/SimpleKalmanParamsConfig.h>
+
+class SimpleKalmanFilter
+{
+public:
+    SimpleKalmanFilter(double q, double r, double initial_value)
+        : Q(q), R(r), X(initial_value), P(1.0) {}
+
+    double update(double measurement)
+    {
+        // 预测步：P = P + Q （无运动模型）
+        P += Q;
+
+        // 计算增益
+        double K = P / (P + R);
+
+        // 更新估计
+        X += K * (measurement - X);
+
+        // 更新误差协方差
+        P = (1 - K) * P;
+
+        return X;
+    }
+
+    void reset(double value)
+    {
+        X = value;
+        P = 1.0;
+    }
+
+public:
+    double Q; // 过程噪声
+    double R; // 测量噪声
+    double X; // 状态估计
+    double P; // 估计误差协方差
+};
+
+SimpleKalmanFilter kf_x(0.001, 0.01, 0.0);
+SimpleKalmanFilter kf_y(0.001, 0.01, 0.0);
+SimpleKalmanFilter kf_yaw(0.001, 0.01, 0.0);
+void paramCallback(jie_ware::SimpleKalmanParamsConfig &config, uint32_t level)
+{
+    // kf_x.reset(config.initial_x);
+    // kf_y.reset(config.initial_y);
+    // kf_yaw.reset(config.initial_yaw);
+
+    kf_x = SimpleKalmanFilter(config.process_noise_x, config.measurement_noise_x, kf_x.X);
+    kf_y = SimpleKalmanFilter(config.process_noise_y, config.measurement_noise_y, kf_y.X);
+    kf_yaw = SimpleKalmanFilter(config.process_noise_yaw, config.measurement_noise_yaw, kf_yaw.X);
+}
+bool kf_initialized = false;
+
+nav_msgs::OccupancyGrid map_msg;
+cv::Mat map_cropped;
+cv::Mat map_temp;
+cv::Mat map_match;
+sensor_msgs::RegionOfInterest map_roi_info;
+std::vector<cv::Point2f> scan_points;
+std::vector<cv::Point2f> best_transform;
+ros::ServiceClient clear_costmaps_client;
+std::string base_frame;
+std::string odom_frame;
+std::string laser_frame;
+std::string laser_topic;
+
+float lidar_x = 250, lidar_y = 250, lidar_yaw = 0;
+float lidar_x_tf = 250, lidar_y_tf = 250, lidar_yaw_tf = 0;
+float deg_to_rad = M_PI / 180.0;
+int cur_sum = 0;
+int clear_countdown = -1;
+int scan_count = 0;
+
+// 初始姿态回调函数
+void initialPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg)
+{
+    // 1. 直接从输入消息中提取 map 坐标系下的位置和方向信息
+    double map_x = msg->pose.pose.position.x;
+    double map_y = msg->pose.pose.position.y;
+    tf2::Quaternion q;
+    // 使用 tf2::fromMsg 将 geometry_msgs::Quaternion 转换为 tf2::Quaternion
+    tf2::fromMsg(msg->pose.pose.orientation, q);
+
+    // 2. 将四元数转换为 yaw 角度 (相对于 map 坐标系)
+    tf2::Matrix3x3 m(q);
+    double roll, pitch, yaw;
+    m.getRPY(roll, pitch, yaw);
+
+    // 3. 检查 map_msg 是否有效
+    if (map_msg.info.resolution <= 0)
+    {
+        ROS_ERROR("地图信息无效或未接收");
+        return;
+    }
+
+    // 4. 将地图坐标转换为裁切后的地图栅格坐标
+    lidar_x = (map_x - map_msg.info.origin.position.x) / map_msg.info.resolution - map_roi_info.x_offset;
+    lidar_y = (map_y - map_msg.info.origin.position.y) / map_msg.info.resolution - map_roi_info.y_offset;
+
+    // 5. 设置 yaw 角度
+    lidar_yaw = -yaw;
+
+    // 6. 设置倒计时
+    clear_countdown = 30;
+
+    // reset ekf
+    kf_initialized = false;
+}
+
+void crop_map();
+void processMap();
+
+void mapCallback(const nav_msgs::OccupancyGrid::ConstPtr &msg)
+{
+    map_msg = *msg;
+    crop_map();
+    processMap();
+}
+
+void crop_map()
+{
+    // 显示地图信息
+    std_msgs::Header header = map_msg.header;
+    nav_msgs::MapMetaData info = map_msg.info;
+
+    // 用来统计地图有效区域的变量
+    int xMax, xMin, yMax, yMin;
+    xMax = xMin = info.width / 2;
+    yMax = yMin = info.height / 2;
+    bool bFirstPoint = true;
+
+    // 把地图数据转换成图片
+    cv::Mat map_raw(info.height, info.width, CV_8UC1, cv::Scalar(128)); // 灰色背景
+
+    for (int y = 0; y < info.height; y++)
+    {
+        for (int x = 0; x < info.width; x++)
+        {
+            int index = y * info.width + x;
+
+            // 直接使用map_msg.data中的值
+            map_raw.at<uchar>(y, x) = static_cast<uchar>(map_msg.data[index]);
+
+            // 统计有效区域
+            if (map_msg.data[index] == 100)
+            {
+                if (bFirstPoint)
+                {
+                    xMax = xMin = x;
+                    yMax = yMin = y;
+                    bFirstPoint = false;
+                    continue;
+                }
+                xMin = std::min(xMin, x);
+                xMax = std::max(xMax, x);
+                yMin = std::min(yMin, y);
+                yMax = std::max(yMax, y);
+            }
+        }
+    }
+    // 计算有效区域的中心点坐标
+    int cen_x = (xMin + xMax) / 2;
+    int cen_y = (yMin + yMax) / 2;
+
+    // 按照有效区域对地图进行裁剪
+    int new_half_width = abs(xMax - xMin) / 2 + 50;
+    int new_half_height = abs(yMax - yMin) / 2 + 50;
+    int new_origin_x = cen_x - new_half_width;
+    int new_origin_y = cen_y - new_half_height;
+    int new_width = new_half_width * 2;
+    int new_height = new_half_height * 2;
+
+    if (new_origin_x < 0)
+        new_origin_x = 0;
+    if ((new_origin_x + new_width) > info.width)
+        new_width = info.width - new_origin_x;
+    if (new_origin_y < 0)
+        new_origin_y = 0;
+    if ((new_origin_y + new_height) > info.height)
+        new_height = info.height - new_origin_y;
+
+    cv::Rect roi(new_origin_x, new_origin_y, new_width, new_height);
+    cv::Mat roi_map = map_raw(roi).clone();
+
+    map_cropped = roi_map;
+
+    // 地图的裁减信息
+    map_roi_info.x_offset = new_origin_x;
+    map_roi_info.y_offset = new_origin_y;
+    map_roi_info.width = new_width;
+    map_roi_info.height = new_height;
+
+    geometry_msgs::PoseWithCovarianceStamped init_pose;
+    init_pose.pose.pose.position.x = 0.0;
+    init_pose.pose.pose.position.y = 0.0;
+    init_pose.pose.pose.position.y = 0.0;
+    init_pose.pose.pose.orientation.x = 0.0;
+    init_pose.pose.pose.orientation.y = 0.0;
+    init_pose.pose.pose.orientation.z = 0.0;
+    init_pose.pose.pose.orientation.w = 1.0;
+
+    geometry_msgs::PoseWithCovarianceStamped::ConstPtr init_pose_ptr(new geometry_msgs::PoseWithCovarianceStamped(init_pose));
+    initialPoseCallback(init_pose_ptr);
+}
+
+bool check(float x, float y, float yaw);
+void scanCallback(const sensor_msgs::LaserScan::ConstPtr &msg)
+{
+    scan_points.clear();
+    double angle = msg->angle_min;
+    for (size_t i = 0; i < msg->ranges.size(); ++i)
+    {
+        if (msg->ranges[i] >= msg->range_min && msg->ranges[i] <= msg->range_max)
+        {
+            float x = msg->ranges[i] * cos(angle) / map_msg.info.resolution;
+            float y = -msg->ranges[i] * sin(angle) / map_msg.info.resolution;
+            scan_points.push_back(cv::Point2f(x, y));
+        }
+        angle += msg->angle_increment;
+    }
+    if (scan_count == 0)
+        scan_count++;
+
+    while (ros::ok())
+    {
+        if (!map_cropped.empty())
+        {
+            // 计算三种情况下的雷达点坐标数组
+            std::vector<cv::Point2f> transform_points, clockwise_points, counter_points;
+
+            int max_sum = 0;
+            float best_dx = 0, best_dy = 0, best_dyaw = 0;
+
+            for (const auto &point : scan_points)
+            {
+                // 情况一：原始角度
+                float rotated_x = point.x * cos(lidar_yaw) - point.y * sin(lidar_yaw);
+                float rotated_y = point.x * sin(lidar_yaw) + point.y * cos(lidar_yaw);
+                transform_points.push_back(cv::Point2f(rotated_x + lidar_x, lidar_y - rotated_y));
+
+                // 情况二：顺时针旋转1度
+                float clockwise_yaw = lidar_yaw + deg_to_rad;
+                rotated_x = point.x * cos(clockwise_yaw) - point.y * sin(clockwise_yaw);
+                rotated_y = point.x * sin(clockwise_yaw) + point.y * cos(clockwise_yaw);
+                clockwise_points.push_back(cv::Point2f(rotated_x + lidar_x, lidar_y - rotated_y));
+
+                // 情况三：逆时针旋转1度
+                float counter_yaw = lidar_yaw - deg_to_rad;
+                rotated_x = point.x * cos(counter_yaw) - point.y * sin(counter_yaw);
+                rotated_y = point.x * sin(counter_yaw) + point.y * cos(counter_yaw);
+                counter_points.push_back(cv::Point2f(rotated_x + lidar_x, lidar_y - rotated_y));
+            }
+
+            // 计算15种变换方式的匹配值
+            std::vector<cv::Point2f> offsets = {{0, 0}, {1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+            std::vector<std::vector<cv::Point2f>> point_sets = {transform_points, clockwise_points, counter_points};
+            std::vector<float> yaw_offsets = {0, deg_to_rad, -deg_to_rad};
+
+            for (int i = 0; i < offsets.size(); ++i)
+            {
+                for (int j = 0; j < point_sets.size(); ++j)
+                {
+                    int sum = 0;
+                    for (const auto &point : point_sets[j])
+                    {
+                        float px = point.x + offsets[i].x;
+                        float py = point.y + offsets[i].y;
+                        if (px >= 0 && px < map_temp.cols && py >= 0 && py < map_temp.rows)
+                        {
+                            sum += map_temp.at<uchar>(py, px);
+                        }
+                    }
+                    if (sum > max_sum)
+                    {
+                        max_sum = sum;
+                        best_dx = offsets[i].x;
+                        best_dy = offsets[i].y;
+                        best_dyaw = yaw_offsets[j];
+                    }
+                }
+            }
+
+            // 更新雷达位置和角度
+            lidar_x += best_dx;
+            lidar_y += best_dy;
+            lidar_yaw += best_dyaw;
+
+            // 判断匹配循环是否可以终止
+            if (check(lidar_x, lidar_y, lidar_yaw))
+            {
+                lidar_x_tf = lidar_x;
+                lidar_y_tf = lidar_y;
+                lidar_yaw_tf = lidar_yaw;
+                break;
+            }
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    if (clear_countdown > -1)
+        clear_countdown--;
+    if (clear_countdown == 0)
+    {
+        std_srvs::Empty srv;
+        clear_costmaps_client.call(srv);
+    }
+}
+
+std::deque<std::tuple<float, float, float>> data_queue;
+const size_t max_size = 10;
+bool check(float x, float y, float yaw)
+{
+    if (x == 0 && y == 0 && yaw == 0)
+    {
+        data_queue.clear();
+        return true;
+    }
+
+    // 添加新数据
+    data_queue.push_back(std::make_tuple(x, y, yaw));
+
+    // 如果队列超过最大大小，移除最旧的数据
+    if (data_queue.size() > max_size)
+    {
+        data_queue.pop_front();
+    }
+
+    // 如果队列已满，检查第一个和最后一个元素
+    if (data_queue.size() == max_size)
+    {
+        auto &first = data_queue.front();
+        auto &last = data_queue.back();
+
+        float dx = std::abs(std::get<0>(last) - std::get<0>(first));
+        float dy = std::abs(std::get<1>(last) - std::get<1>(first));
+        float dyaw = std::abs(std::get<2>(last) - std::get<2>(first));
+
+        // 如果所有差值的绝对值都小于5，清空队列退出循环
+        if (dx < 1 && dy < 1 && dyaw < 1 * deg_to_rad)
+        {
+            data_queue.clear();
+            return true;
+        }
+    }
+    return false;
+}
+
+cv::Mat createGradientMask(int size)
+{
+    cv::Mat mask(size, size, CV_8UC1);
+    int center = size / 2;
+    for (int y = 0; y < size; y++)
+    {
+        for (int x = 0; x < size; x++)
+        {
+            double distance = std::hypot(x - center, y - center);
+            int value = cv::saturate_cast<uchar>(255 * std::max(0.0, 1.0 - distance / center));
+            mask.at<uchar>(y, x) = value;
+        }
+    }
+    return mask;
+}
+
+void processMap()
+{
+    if (map_cropped.empty())
+        return;
+
+    map_temp = cv::Mat::zeros(map_cropped.size(), CV_8UC1);
+    cv::Mat gradient_mask = createGradientMask(101); // 创建一个101x101的渐变掩模
+
+    for (int y = 0; y < map_cropped.rows; y++)
+    {
+        for (int x = 0; x < map_cropped.cols; x++)
+        {
+            if (map_cropped.at<uchar>(y, x) == 100) // 障碍物
+            {
+                int left = std::max(0, x - 50);
+                int top = std::max(0, y - 50);
+                int right = std::min(map_cropped.cols - 1, x + 50);
+                int bottom = std::min(map_cropped.rows - 1, y + 50);
+
+                cv::Rect roi(left, top, right - left + 1, bottom - top + 1);
+                cv::Mat region = map_temp(roi);
+
+                int mask_left = 50 - (x - left);
+                int mask_top = 50 - (y - top);
+                cv::Rect mask_roi(mask_left, mask_top, roi.width, roi.height);
+                cv::Mat mask = gradient_mask(mask_roi);
+
+                cv::max(region, mask, region);
+            }
+        }
+    }
+}
+
+void pose_tf()
+{
+    if (scan_count == 0)
+        return;
+    if (map_cropped.empty() || map_msg.data.empty())
+        return;
+
+    static tf2_ros::Buffer tfBuffer;
+    static tf2_ros::TransformListener tfListener(tfBuffer);
+
+    // 1. 计算在裁剪地图中的实际米制坐标
+    // double x_meters = (lidar_x + map_roi_info.x_offset) * map_msg.info.resolution;
+    // double y_meters = (lidar_y + map_roi_info.y_offset) * map_msg.info.resolution;
+    double x_meters = (lidar_x_tf + map_roi_info.x_offset) * map_msg.info.resolution;
+    double y_meters = (lidar_y_tf + map_roi_info.y_offset) * map_msg.info.resolution;
+
+    // 2. 考虑原始地图的原点偏移
+    x_meters += map_msg.info.origin.position.x;
+    y_meters = y_meters + map_msg.info.origin.position.y;
+
+    // 3. 处理yaw角度
+    // double yaw_ros = -lidar_yaw;
+    double yaw_ros = -lidar_yaw_tf;
+
+    // 4. 将弧度转换为四元数
+    tf2::Quaternion q;
+    q.setRPY(0, 0, yaw_ros);
+
+    // 5. 计算 base_footprint 在 map 中的位置
+    double base_x = x_meters;
+    double base_y = y_meters;
+
+    // 6. 查询 odom 到 base_frame 的变换
+    geometry_msgs::TransformStamped odom_to_base;
+    try
+    {
+        odom_to_base = tfBuffer.lookupTransform(odom_frame, laser_frame, ros::Time(0));
+    }
+    catch (tf2::TransformException &ex)
+    {
+        ROS_WARN("%s", ex.what());
+        return;
+    }
+
+    // 7. 计算 map 到 odom 的变换
+    tf2::Transform map_to_base, odom_to_base_tf2;
+    map_to_base.setOrigin(tf2::Vector3(base_x, base_y, 0));
+    map_to_base.setRotation(q);
+
+    tf2::fromMsg(odom_to_base.transform, odom_to_base_tf2);
+    tf2::Transform map_to_odom = map_to_base * odom_to_base_tf2.inverse();
+
+    // 8. 发布 map 到 odom 的变换
+    static tf2_ros::TransformBroadcaster br;
+    geometry_msgs::TransformStamped map_to_odom_msg;
+
+    map_to_odom_msg.header.stamp = ros::Time::now();
+    map_to_odom_msg.header.frame_id = "map";
+    map_to_odom_msg.child_frame_id = odom_frame;
+    map_to_odom_msg.transform = tf2::toMsg(map_to_odom);
+
+    // 计算 yaw 角度
+    tf2::Quaternion q_tf2(
+        map_to_odom_msg.transform.rotation.x,
+        map_to_odom_msg.transform.rotation.y,
+        map_to_odom_msg.transform.rotation.z,
+        map_to_odom_msg.transform.rotation.w);
+    tf2::Matrix3x3 m(q_tf2);
+    double roll, pitch, yaw;
+    m.getRPY(roll, pitch, yaw);
+
+    // kf
+    if (!kf_initialized)
+    {
+        // 第一次收到数据时用真实值初始化滤波器
+        kf_x.reset(map_to_odom_msg.transform.translation.x);
+        kf_y.reset(map_to_odom_msg.transform.translation.y);
+        kf_yaw.reset(yaw);
+        kf_initialized = true;
+    }
+
+    // 滤波处理
+    double filtered_x = kf_x.update(map_to_odom_msg.transform.translation.x);
+    double filtered_y = kf_y.update(map_to_odom_msg.transform.translation.y);
+    double filtered_yaw = kf_yaw.update(yaw);
+
+    tf2::Quaternion filtered_q;
+    filtered_q.setRPY(0, 0, filtered_yaw);
+
+    // if (filtered_x!=map_to_odom_msg.transform.translation.x || filtered_y!=map_to_odom_msg.transform.translation.y || filtered_yaw != yaw){
+    std::cout << "origin: x:" << map_to_odom_msg.transform.translation.x << "\ty:" << map_to_odom_msg.transform.translation.y
+              << "\tyaw:" << yaw << std::endl;
+    std::cout << "ekf___: x:" << filtered_x << "\ty:" << filtered_y
+              << "\tyaw:" << filtered_yaw << std::endl;
+    // }
+
+    map_to_odom_msg.transform.translation.x = filtered_x;
+    map_to_odom_msg.transform.translation.y = filtered_y;
+    map_to_odom_msg.transform.rotation = tf2::toMsg(filtered_q);
+    br.sendTransform(map_to_odom_msg);
+}
+
+int main(int argc, char **argv)
+{
+    setlocale(LC_ALL, "");
+    ros::init(argc, argv, "lidar_loc");
+
+    // 读取参数
+    ros::NodeHandle private_nh("~");
+    private_nh.param<std::string>("base_frame", base_frame, "base_footprint");
+    private_nh.param<std::string>("odom_frame", odom_frame, "odom");
+    private_nh.param<std::string>("laser_frame", laser_frame, "laser");
+    private_nh.param<std::string>("laser_topic", laser_topic, "scan");
+
+    double process_noise_x, measurement_noise_x;
+    double process_noise_y, measurement_noise_y;
+    double process_noise_yaw, measurement_noise_yaw;
+    private_nh.param<double>("process_noise_x", process_noise_x, 0.001);
+    private_nh.param<double>("measurement_noise_x", measurement_noise_x, 0.01);
+    private_nh.param<double>("process_noise_y", process_noise_y, 0.001);
+    private_nh.param<double>("measurement_noise_y", measurement_noise_y, 0.01);
+    private_nh.param<double>("process_noise_yaw", process_noise_yaw, 0.001);
+    private_nh.param<double>("measurement_noise_yaw", measurement_noise_yaw, 0.01);
+    kf_x = SimpleKalmanFilter(process_noise_x, measurement_noise_x, 0.0);
+    kf_y = SimpleKalmanFilter(process_noise_y, measurement_noise_y, 0.0);
+    kf_yaw = SimpleKalmanFilter(process_noise_yaw, measurement_noise_yaw, 0.0);
+
+    // 初始化 dynamic_reconfigure 回调
+    dynamic_reconfigure::Server<jie_ware::SimpleKalmanParamsConfig> server;
+    dynamic_reconfigure::Server<jie_ware::SimpleKalmanParamsConfig>::CallbackType f =
+        boost::bind(&paramCallback, _1, _2);
+    server.setCallback(f);
+
+    ros::NodeHandle nh;
+    ros::Subscriber map_sub = nh.subscribe("map", 1, mapCallback);
+    ros::Subscriber scan_sub = nh.subscribe(laser_topic, 1, scanCallback);
+    ros::Subscriber initial_pose_sub = nh.subscribe("initialpose", 1, initialPoseCallback);
+    clear_costmaps_client = nh.serviceClient<std_srvs::Empty>("move_base/clear_costmaps");
+
+    ros::Rate rate(30); // tf发送频率
+
+    while (ros::ok())
+    {
+        pose_tf();
+        ros::spinOnce();
+        rate.sleep();
+    }
+
+    return 0;
+}

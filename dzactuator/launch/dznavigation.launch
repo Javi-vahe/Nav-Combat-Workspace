@@ -1,0 +1,42 @@
+<?xml version="1.0" ?>
+<launch>
+
+  <!-- <include file="$(find dzactuator)/launch/bringup.launch" /> -->
+  <!-- <include file="$(find dzactuator)/launch/amcl.launch" /> -->
+
+  <include file="$(find jie_ware)/launch/lidar_loc.launch" />
+  <include file="$(find jie_ware)/launch/lidar_filter.launch" />
+  <!-- <include file="$(find cmu_local_planner)/launch/path_follower.launch" /> -->
+  <node name="map_server" pkg="map_server" type="map_server" args="/home/duzhong/dzacs/src/resource/maps/newmap.yaml" output="screen"/>
+
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <!-- <param name="base_global_planner" value="hybrid_astar_planner/HybridAStarPlanner" /> -->
+    <param name="base_global_planner" value="global_planner/GlobalPlanner" />
+    <rosparam command="load" file="$(find dzactuator)/param/base_global_planner.yaml" />
+		<param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" />
+	  <rosparam command="load" file="$(find dzactuator)/param/teb_local_planner.yaml" />
+    <rosparam file="$(find dzactuator)/param/costmap_converter_params.yaml" command="load" />
+		<!-- <param name="base_local_planner" value="donothing_local_planner/DoNothingLocalPlanner" /> -->
+	  <!-- <rosparam command="load" file="$(find dzactuator)/param/donothing_local_planner.yaml" /> -->
+    <!-- <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" /> -->
+    <!-- <rosparam command="load" file="$(find dzactuator)/param/dwa_loacl_planner.yaml" /> -->
+
+    <rosparam file="$(find dzactuator)/param/costmap_common.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find dzactuator)/param/costmap_common.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find dzactuator)/param/local_costmap.yaml" command="load" />
+    <rosparam file="$(find dzactuator)/param/global_costmap.yaml" command="load" />
+    <rosparam file="$(find dzactuator)/param/move_base_planner.yaml" command="load" />
+ 
+    <rosparam file="$(find dzactuator)/param/move_base_params.yaml" command="load" />
+    <!-- <remap from="/move_base_simple/goal" to="/move_base/move_base_simple/goal"/> -->
+    <!-- <remap from="/cmd_vel" to="/move_base/cmd_vel"/> -->
+
+  </node>
+   <node pkg="clear_costmap_recovery" type="costmap_cleaner" name="costmap_cleaner" respawn="true" output="screen"/>
+   <!-- for teb -->
+   <node pkg="transformer_zllc" type="cmd_vel_to_angle_node" name="cmd_vel_to_angle_node" respawn="true" output="screen"/>
+   <!-- <node pkg="transformer_zllc" type="teb_tolerance_changer" name="teb_tolerance_changer" respawn="true" output="screen"/> -->
+   <!-- for cmu_local_planner -->
+   <!-- <node pkg="transformer_zllc" type="angular_to_angle_node" name="angular_to_angle_node" respawn="true" output="screen"/> -->
+
+</launch>

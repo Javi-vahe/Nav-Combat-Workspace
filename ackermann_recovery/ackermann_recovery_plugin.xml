@@ -1,0 +1,9 @@
+<class_libraries>
+  <library path="lib/libackermann_recovery">
+    <class name="ackermann_recovery/AckermannRecovery"
+           type="ackermann_recovery::AckermannRecovery"
+           base_class_type="nav_core::RecoveryBehavior">
+      <description>Recovery behavior for Ackermann steering vehicles</description>
+    </class>
+  </library>
+</class_libraries>

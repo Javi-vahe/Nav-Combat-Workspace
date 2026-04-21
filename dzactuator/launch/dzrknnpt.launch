@@ -1,0 +1,3 @@
+<launch>
+    <node name="rknn_pt" pkg="rknn_pt" type="det_node"  />
+</launch>

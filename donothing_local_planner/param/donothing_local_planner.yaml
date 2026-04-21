@@ -1,0 +1,19 @@
+DoNothingLocalPlanner:
+  # -------------------------------------------------------------------
+  # 当 move_base 的 max_planning_retries 参数大于 0 时，
+  # 每检测到一次障碍物会返回一次false，当返回次数等于 max_planning_retries 时，
+  # 触发全局路径重新规划
+  use_path_blocked_check: false    # 启用路径是否存在障碍判断
+  allow_unknown: true # 允许将未知区域作为无障碍区域
+  robot_radius: 0.18  # 用于寻找全局路径中的最近点
+  # obstacle_cost: 253  # 障碍物代价值
+
+  # -------------------------------------------------------------------
+  use_external_goal_check: false    # 使用外部判断是否到达目标点
+  is_reach_topic: "is_reached"
+
+  # -------------------------------------------------------------------
+  # 如果use_external_goal_check为false, 使用内部判断是否到达目标点
+  robot_frame: "base_link"
+  xy_goal_tolerance: 0.15
+  yaw_goal_tolerance: 3.14

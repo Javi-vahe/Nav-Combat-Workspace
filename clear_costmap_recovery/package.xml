@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="2">
+    <name>clear_costmap_recovery</name>
+    <version>1.17.3</version>
+    <description>
+
+        This package provides a recovery behavior for the navigation stack that attempts to clear space by reverting the costmaps used by the navigation stack to the static map outside of a given area.
+
+    </description>
+    <author>example</author>
+    <author>example@example.com</author>
+    <maintainer email="example@example.com">example</maintainer>
+    <maintainer email="example@example.com">example</maintainer>
+    <maintainer email="example@example.com">example</maintainer>
+    <license>BSD</license>
+    <url>http://wiki.ros.org/clear_costmap_recovery</url>
+
+    <buildtool_depend>catkin</buildtool_depend>
+
+    <build_depend>cmake_modules</build_depend>
+
+    <depend>costmap_2d</depend>
+    <depend>eigen</depend>
+    <depend>nav_core</depend>
+    <depend>pluginlib</depend>
+    <depend>roscpp</depend>
+    <depend>tf2_ros</depend>
+    <depend>geometry_msgs</depend>
+    <depend>std_srvs</depend>
+
+
+    <test_depend>rostest</test_depend>
+
+    <export>
+        <nav_core plugin="${prefix}/ccr_plugin.xml" />
+    </export>
+</package>
+
+

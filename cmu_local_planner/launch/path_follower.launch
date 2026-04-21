@@ -1,0 +1,39 @@
+<launch>
+  <node pkg="cmu_local_planner" type="pathFollower" name="pathFollower" output="screen" required="true">
+    <param name="sensorOffsetX" value="0" /> <!-- 传感器在X轴上的偏移量 -->
+    <param name="sensorOffsetY" value="0" /> <!-- 传感器在Y轴上的偏移量 -->
+    <param name="pubSkipNum" type="int" value="1" /> <!-- 发布消息时跳过的帧数 -->
+    <param name="twoWayDrive" value="true" /> <!-- 是否启用双向驾驶模式 -->
+    <param name="lookAheadDis" type="double" value="0.15" /> <!-- 路径跟随的前视距离 -->
+    <param name="yawRateGain" type="double" value="1.0" /> <!-- 偏航率增益，用于控制转向 -->
+    <param name="stopYawRateGain" type="double" value="1.5" /> <!-- 停止时的偏航率增益 -->
+    <param name="maxYawRate" type="double" value="30.0" /> <!-- 最大偏航率限制 0.5236 rad-->
+    <param name="maxSpeed" value="0.5" /> <!-- 最大行驶速度 -->
+    <param name="maxAccel" type="double" value="0.3" /> <!-- 最大加速度 -->
+    <param name="switchTimeThre" type="double" value="1.0" /> <!-- 切换方向的时间阈值 -->
+    <param name="dirDiffThre" type="double" value="0.1" /> <!-- 方向差异的阈值 -->
+    <param name="stopDisThre" type="double" value="0.1" /> <!-- 停止距离阈值 -->
+    <param name="slowDwnDisThre" type="double" value="0.85" /> <!-- 减速距离阈值 -->
+    <param name="useInclRateToSlow" type="bool" value="false" /> <!-- 是否使用倾斜率来减速 -->
+    <param name="inclRateThre" type="double" value="120.0" /> <!-- 倾斜率阈值 -->
+    <param name="slowRate1" type="double" value="0.25" /> <!-- 第一阶段减速率 -->
+    <param name="slowRate2" type="double" value="0.5" /> <!-- 第二阶段减速率 -->
+    <param name="slowTime1" type="double" value="2.0" /> <!-- 第一阶段减速时间 -->
+    <param name="slowTime2" type="double" value="2.0" /> <!-- 第二阶段减速时间 -->
+    <param name="useInclToStop" type="bool" value="false" /> <!-- 是否使用倾斜来停止 -->
+    <param name="inclThre" type="double" value="45.0" /> <!-- 倾斜停止的阈值 -->
+    <param name="stopTime" type="double" value="5.0" /> <!-- 停止时间 -->
+    <param name="noRotAtStop" type="bool" value="false" /> <!-- 停止时是否禁止旋转 -->
+    <param name="noRotAtGoal" type="bool" value="true" /> <!-- 到达目标时是否禁止旋转 -->
+    <param name="autonomyMode" value="true" /> <!-- 是否启用自主模式 -->
+    <param name="autonomySpeed" value="1.0" /> <!-- 自主模式下的速度 -->
+    <param name="joyToSpeedDelay" value="2.0" /> <!-- 从遥控到速度控制的延迟时间 -->
+
+    <remap from="/path" to="/move_base/HybridAStarPlanner/plan"/>
+    <!-- <remap from="/state_estimation" to="/odom"/> -->
+    <remap from="/is_reached" to="/move_base/DoNothingLocalPlanner/is_reached"/>
+  </node>
+  
+  <node pkg="transformer_zllc" type="pub_robot_state_node" name="pub_robot_state_node" respawn="true" output="screen"/>
+
+</launch>

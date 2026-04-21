@@ -1,0 +1,4 @@
+savePath: "/home/duzhong/dzacs/src/resource/mapping.txt"
+saveStopPointPath: "/home/duzhong/dzacs/src/resource/stopmapping.txt"
+move_base/saveMapping: false
+move_base/controller_frequency: 4

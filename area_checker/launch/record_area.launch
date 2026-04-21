@@ -1,0 +1,7 @@
+<launch>
+  <node name="area_recorder" pkg="area_checker" type="area_recorder_node" output="screen" required="true">
+    <param name="save_path" value="$(find area_checker)/config/recorded_areas.yaml" />
+  </node>
+
+  <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find area_checker)/rviz/area.rviz"/> -->
+</launch>

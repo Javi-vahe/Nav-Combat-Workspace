@@ -1,0 +1,7 @@
+<library path="lib/libdonothing_local_planner">
+        <class name="donothing_local_planner/DoNothingLocalPlanner" type="donothing_local_planner::DoNothingLocalPlanner" base_class_type="nav_core::BaseLocalPlanner">
+                <description>
+                        Simplest Plugin for DoNothingLocalPlanner
+                </description>
+        </class>
+</library>

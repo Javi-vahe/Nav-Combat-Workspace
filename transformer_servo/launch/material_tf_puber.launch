@@ -1,0 +1,250 @@
+<launch>
+
+    <node pkg="transformer_servo" type="material_tf_puber" name="material_tf_puber" output="screen">
+        <!-- common material height -->
+        <param name="use_same_height" value="true" />
+        <param name="material_height" value="0.11" />
+        <!-- self -->
+        <param name="self_material_1_x" value="-0.08" />
+        <param name="self_material_1_y" value="1.159" />
+        <param name="self_material_1_z" value="0.0" />
+        <param name="self_material_1_q_z" value="1.0" />
+        <param name="self_material_1_q_w" value="0.0" />
+
+        <param name="self_material_2_x" value="0.088" />
+        <param name="self_material_2_y" value="1.335" />
+        <param name="self_material_2_z" value="0.0" />
+        <param name="self_material_2_q_z" value="0.704921" />
+        <param name="self_material_2_q_w" value="0.7092858" />
+
+        <param name="self_material_3_x" value="0.2933" />
+        <param name="self_material_3_y" value="1.14025" />
+        <param name="self_material_3_z" value="0.0" />
+        <param name="self_material_3_q_z" value="0.0" />
+        <param name="self_material_3_q_w" value="1.0" />
+
+        <param name="self_material_4_x" value="0.0999" />
+        <param name="self_material_4_y" value="0.95733" />
+        <param name="self_material_4_z" value="0.0" />
+        <param name="self_material_4_q_z" value="-0.7064" />
+        <param name="self_material_4_q_w" value="0.7078" />
+
+        <param name="self_material_5_x" value="1.04029" />
+        <param name="self_material_5_y" value="1.1688" />
+        <param name="self_material_5_z" value="0.0" />
+        <param name="self_material_5_q_z" value="-0.99999" />
+        <param name="self_material_5_q_w" value="0.003936952" />
+
+        <param name="self_material_6_x" value="1.2068" />
+        <param name="self_material_6_y" value="1.359115" />
+        <param name="self_material_6_z" value="0.0" />
+        <param name="self_material_6_q_z" value="0.7126376" />
+        <param name="self_material_6_q_w" value="0.701532" />
+
+        <param name="self_material_7_x" value="1.396778" />
+        <param name="self_material_7_y" value="1.17627" />
+        <param name="self_material_7_z" value="0.0" />
+        <param name="self_material_7_q_z" value="0.00204" />
+        <param name="self_material_7_q_w" value="0.99999" />
+
+        <param name="self_material_8_x" value="1.2214" />
+        <param name="self_material_8_y" value="0.97515" />
+        <param name="self_material_8_z" value="0.0" />
+        <param name="self_material_8_q_z" value="-0.70329" />
+        <param name="self_material_8_q_w" value="0.7109" />
+
+        <param name="self_material_9_x" value="2.224039" />
+        <param name="self_material_9_y" value="1.14829" />
+        <param name="self_material_9_z" value="0.0" />
+        <param name="self_material_9_q_z" value="0.999978" />
+        <param name="self_material_9_q_w" value="0.006575" />
+
+        <param name="self_material_10_x" value="2.41636" />
+        <param name="self_material_10_y" value="1.33635" />
+        <param name="self_material_10_z" value="0.0" />
+        <param name="self_material_10_q_z" value="0.707" />
+        <param name="self_material_10_q_w" value="0.707" />
+
+        <param name="self_material_11_x" value="2.5998" />
+        <param name="self_material_11_y" value="1.1454" />
+        <param name="self_material_11_z" value="0.0" />
+        <param name="self_material_11_q_z" value="0.000428" />
+        <param name="self_material_11_q_w" value="0.99999" />
+
+        <param name="self_material_12_x" value="2.4115" />
+        <param name="self_material_12_y" value="0.98987" />
+        <param name="self_material_12_z" value="0.0" />
+        <param name="self_material_12_q_z" value="-0.7054" />
+        <param name="self_material_12_q_w" value="0.70876" />
+
+        <param name="self_material_13_x" value="2.25566" />
+        <param name="self_material_13_y" value="0.082424" />
+        <param name="self_material_13_z" value="0.0" />
+        <param name="self_material_13_q_z" value="0.9999898" />
+        <param name="self_material_13_q_w" value="0.0045" />
+
+        <param name="self_material_14_x" value="2.455" />
+        <param name="self_material_14_y" value="0.276" />
+        <param name="self_material_14_z" value="0.0" />
+        <param name="self_material_14_q_z" value="0.7037" />
+        <param name="self_material_14_q_w" value="0.71049" />
+
+        <param name="self_material_15_x" value="2.6132" />
+        <param name="self_material_15_y" value="0.09249" />
+        <param name="self_material_15_z" value="0.0" />
+        <param name="self_material_15_q_z" value="0.002637" />
+        <param name="self_material_15_q_w" value="0.9999965" />
+
+        <param name="self_material_16_x" value="2.43555" />
+        <param name="self_material_16_y" value="-0.0718" />
+        <param name="self_material_16_z" value="0.0" />
+        <param name="self_material_16_q_z" value="-0.707" />
+        <param name="self_material_16_q_w" value="0.707" />
+
+        <param name="self_material_17_x" value="1.0899" />
+        <param name="self_material_17_y" value="0.023941" />
+        <param name="self_material_17_z" value="0.0" />
+        <param name="self_material_17_q_z" value="0.99999747" />
+        <param name="self_material_17_q_w" value="0.0022484" />
+
+        <param name="self_material_18_x" value="1.26377" />
+        <param name="self_material_18_y" value="0.2142" />
+        <param name="self_material_18_z" value="0.0" />
+        <param name="self_material_18_q_z" value="0.706" />
+        <param name="self_material_18_q_w" value="0.708" />
+
+        <param name="self_material_19_x" value="1.456" />
+        <param name="self_material_19_y" value="0.03168" />
+        <param name="self_material_19_z" value="0.0" />
+        <param name="self_material_19_q_z" value="0.00394" />
+        <param name="self_material_19_q_w" value="0.99999" />
+
+        <param name="self_material_20_x" value="1.27845" />
+        <param name="self_material_20_y" value="-0.12836" />
+        <param name="self_material_20_z" value="0.0" />
+        <param name="self_material_20_q_z" value="-0.70835" />
+        <param name="self_material_20_q_w" value="0.70585" />
+
+        <!-- enemy -->
+        <param name="enemy_material_1_x" value="2.5408" />
+        <param name="enemy_material_1_y" value="2.8202" />
+        <param name="enemy_material_1_z" value="0.0" />
+        <param name="enemy_material_1_q_z" value="0.01111" />
+        <param name="enemy_material_1_q_w" value="0.9999" />
+
+        <param name="enemy_material_2_x" value="2.35998" />
+        <param name="enemy_material_2_y" value="2.64333" />
+        <param name="enemy_material_2_z" value="0.0" />
+        <param name="enemy_material_2_q_z" value="-0.7" />
+        <param name="enemy_material_2_q_w" value="0.713" />
+
+        <param name="enemy_material_3_x" value="2.1906" />
+        <param name="enemy_material_3_y" value="2.81676" />
+        <param name="enemy_material_3_z" value="0.0" />
+        <param name="enemy_material_3_q_z" value="0.999999" />
+        <param name="enemy_material_3_q_w" value="0.000665" />
+
+        <param name="enemy_material_4_x" value="2.3538" />
+        <param name="enemy_material_4_y" value="3.006" />
+        <param name="enemy_material_4_z" value="0.0" />
+        <param name="enemy_material_4_q_z" value="0.70867" />
+        <param name="enemy_material_4_q_w" value="0.705533" />
+
+        <param name="enemy_material_5_x" value="1.415" />
+        <param name="enemy_material_5_y" value="2.8165" />
+        <param name="enemy_material_5_z" value="0.0" />
+        <param name="enemy_material_5_q_z" value="-0.0007" />
+        <param name="enemy_material_5_q_w" value="0.999999" />
+
+        <param name="enemy_material_6_x" value="1.239" />
+        <param name="enemy_material_6_y" value="2.647" />
+        <param name="enemy_material_6_z" value="0.0" />
+        <param name="enemy_material_6_q_z" value="-0.6996" />
+        <param name="enemy_material_6_q_w" value="0.7144" />
+
+        <param name="enemy_material_7_x" value="1.07496" />
+        <param name="enemy_material_7_y" value="2.8031" />
+        <param name="enemy_material_7_z" value="0.0" />
+        <param name="enemy_material_7_q_z" value="0.999999" />
+        <param name="enemy_material_7_q_w" value="0.00112" />
+
+        <param name="enemy_material_8_x" value="1.23576" />
+        <param name="enemy_material_8_y" value="2.98484" />
+        <param name="enemy_material_8_z" value="0.0" />
+        <param name="enemy_material_8_q_z" value="0.708" />
+        <param name="enemy_material_8_q_w" value="0.706" />
+
+        <param name="enemy_material_9_x" value="0.231688" />
+        <param name="enemy_material_9_y" value="2.819689" />
+        <param name="enemy_material_9_z" value="0.0" />
+        <param name="enemy_material_9_q_z" value="-0.00096" />
+        <param name="enemy_material_9_q_w" value="0.999999" />
+
+        <param name="enemy_material_10_x" value="0.0357" />
+        <param name="enemy_material_10_y" value="2.6476" />
+        <param name="enemy_material_10_z" value="0.0" />
+        <param name="enemy_material_10_q_z" value="-0.707" />
+        <param name="enemy_material_10_q_w" value="0.707" />
+
+        <param name="enemy_material_11_x" value="-0.128686" />
+        <param name="enemy_material_11_y" value="2.831" />
+        <param name="enemy_material_11_z" value="0.0" />
+        <param name="enemy_material_11_q_z" value="-0.9999" />
+        <param name="enemy_material_11_q_w" value="0.005" />
+
+        <param name="enemy_material_12_x" value="0.0446" />
+        <param name="enemy_material_12_y" value="3.0104" />
+        <param name="enemy_material_12_z" value="0.0" />
+        <param name="enemy_material_12_q_z" value="0.705" />
+        <param name="enemy_material_12_q_w" value="0.708" />
+
+        <param name="enemy_material_13_x" value="0.2084" />
+        <param name="enemy_material_13_y" value="3.8902" />
+        <param name="enemy_material_13_z" value="0.0" />
+        <param name="enemy_material_13_q_z" value="0.0012" />
+        <param name="enemy_material_13_q_w" value="0.999999" />
+
+        <param name="enemy_material_14_x" value="0.025" />
+        <param name="enemy_material_14_y" value="3.71327" />
+        <param name="enemy_material_14_z" value="0.0" />
+        <param name="enemy_material_14_q_z" value="-0.702" />
+        <param name="enemy_material_14_q_w" value="0.7121" />
+
+        <param name="enemy_material_15_x" value="-0.124" />
+        <param name="enemy_material_15_y" value="3.8869" />
+        <param name="enemy_material_15_z" value="0.0" />
+        <param name="enemy_material_15_q_z" value="0.9999999" />
+        <param name="enemy_material_15_q_w" value="0.0003906" />
+
+        <param name="enemy_material_16_x" value="0.0364" />
+        <param name="enemy_material_16_y" value="4.076" />
+        <param name="enemy_material_16_z" value="0.0" />
+        <param name="enemy_material_16_q_z" value="0.70765" />
+        <param name="enemy_material_16_q_w" value="0.70655" />
+
+        <param name="enemy_material_17_x" value="1.3814" />
+        <param name="enemy_material_17_y" value="3.9244" />
+        <param name="enemy_material_17_z" value="0.0" />
+        <param name="enemy_material_17_q_z" value="0.000744" />
+        <param name="enemy_material_17_q_w" value="0.999999" />
+
+        <param name="enemy_material_18_x" value="1.20549" />
+        <param name="enemy_material_18_y" value="3.7601" />
+        <param name="enemy_material_18_z" value="0.0" />
+        <param name="enemy_material_18_q_z" value="-0.70155" />
+        <param name="enemy_material_18_q_w" value="0.7126" />
+
+        <param name="enemy_material_19_x" value="1.036" />
+        <param name="enemy_material_19_y" value="3.9385" />
+        <param name="enemy_material_19_z" value="0.0" />
+        <param name="enemy_material_19_q_z" value="0.99999" />
+        <param name="enemy_material_19_q_w" value="0.00345" />
+
+        <param name="enemy_material_20_x" value="1.1994" />
+        <param name="enemy_material_20_y" value="4.11279" />
+        <param name="enemy_material_20_z" value="0.0" />
+        <param name="enemy_material_20_q_z" value="0.7136" />
+        <param name="enemy_material_20_q_w" value="0.7005" />
+    </node> 
+
+</launch>

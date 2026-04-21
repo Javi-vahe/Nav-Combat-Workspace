@@ -1,0 +1,5 @@
+<library path="libdecaying_obstacle_layer">
+  <class type="decaying_layer::DecayingObstacleLayer" base_class_type="costmap_2d::Layer">
+    <description></description>
+  </class>
+</library>

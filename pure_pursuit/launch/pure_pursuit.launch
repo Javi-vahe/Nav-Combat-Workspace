@@ -1,0 +1,25 @@
+<launch>
+    <node pkg="pure_pursuit" type="pure_pursuit" name="pure_pursuit" output="screen">
+        <param name="wheelbase" value="0.148" />
+        <param name="lookahead_distance" value="0.35" />
+        <param name="max_linear_velocity" value="1.0" />
+        <param name="max_rotational_velocity" value="0.523" />
+        <param name="slow_start_radian" value="0.25" />
+        <param name="position_tolerance" value="0.1" />
+        <param name="use_steering_angle" value="true" />
+        <!-- <param name="steering_angle_velocity" value="0.523" /> -->
+        <!-- <param name="acceleration" value="0.1" /> -->
+        <!-- <param name="jerk" value="0.1" /> -->
+        <!-- <param name="steering_angle_limit" value="0.523" /> -->
+        <param name="map_frame_id" value="map" />
+        <param name="robot_frame_id" value="base_link" />
+        <param name="lookahead_frame_id" value="lookahead" />
+        <!-- <param name="ackermann_frame_id" value="base_link" /> -->
+
+        <!-- <remap from="path_segment" to="/move_base/NavfnROS/plan" /> -->
+        <remap from="path_segment" to="/pure_pursuit/my_path" />
+        <!-- <remap from="path_segment" to="/move_base/HybridAStarPlanner/plan" /> -->
+        <remap from="odometry" to="/odom" />
+        <remap from="cmd_vel" to="/cmd_vel" />
+    </node>
+</launch>

@@ -1,0 +1,4 @@
+<launch>
+    <include file="$(find pure_pursuit)/launch/path_publisher.launch"/>
+    <include file="$(find pure_pursuit)/launch/pure_pursuit.launch"/>
+</launch>

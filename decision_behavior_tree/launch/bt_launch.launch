@@ -1,0 +1,8 @@
+<launch>
+
+  <node pkg="decision_behavior_tree" type="decision_behavior_tree_node" name="decision_behavior_tree_node" output="screen">
+    <param name="bt_xml_file" value="main_tree.xml" />
+    <!-- <param name="bt_xml_file" value="test.xml" /> -->
+  </node>
+
+</launch>

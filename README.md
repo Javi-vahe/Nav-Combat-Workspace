@@ -4,6 +4,16 @@
 > 本人把一套比赛机器人在真实场地里需要反复联调的核心链路和相关经验都放进来了。底盘和云台的执行、IMU 和雷达接入、地图定位、局部规划、固定路径巡航、视觉检测、裁判系统通信、物资点处理、比赛状态切换，以及上层行为树决策，我都放在了同一套 catkin 工作空间里。这个仓库也是后来回头看自己整套比赛系统时最完整的一次留档。
 > 如果这个项目对你有帮助，欢迎点一个 Star，感谢。
 
+## 系统架构
+
+<p align="center">
+  <img src="docs/architecture.png" alt="Abot Cruise Architecture" width="1200">
+</p>
+
+<p align="center">
+  <i>Overall architecture of the CRAIC National First Prize competition robot.</i>
+</p>
+
 <p align="center">
   <img alt="ROS1" src="https://img.shields.io/badge/ROS-1-blue" />
   <img alt="Catkin" src="https://img.shields.io/badge/Build-catkin-orange" />

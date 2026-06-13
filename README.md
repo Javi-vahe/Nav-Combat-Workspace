@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <i>Overall architecture of the CRAIC National First Prize competition robot.</i>
+  <i>Overall architecture of the Nav-Combat robot.</i>
 </p>
 
 <p align="center">
